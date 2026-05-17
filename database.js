@@ -10,8 +10,14 @@ const DATABASE_URL = process.env.DATABASE_URL || '';
 async function initDatabase() {
   if (DATABASE_URL) {
     const { Pool } = require('pg');
-    const url = DATABASE_URL.includes('supabase.co') ? DATABASE_URL.replace(':6543', ':5432') : DATABASE_URL;
-    const pool = new Pool({ connectionString: url, ssl: { rejectUnauthorized: false }, family: 4 });
+    let url = DATABASE_URL;
+    if (url.includes('supabase.co') && url.includes(':6543')) {
+      const region = 'us-east-2';
+      url = url.replace(/db\.[^.]+\.supabase\.co/, `aws-0-${region}.pooler.supabase.com`);
+      url = url.replace(':6543', ':5432');
+      url += '?pgbouncer=true';
+    }
+    const pool = new Pool({ connectionString: url, ssl: { rejectUnauthorized: false } });
     const client = await pool.connect();
     db = pool;
     isPostgres = true;
