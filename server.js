@@ -54,16 +54,16 @@ app.get('/api/auth/check', (req, res) => {
   res.json({ authenticated: !!(req.session && req.session.authenticated) });
 });
 
-app.use(express.static(path.join(__dirname, 'public'), { index: false }));
-
 app.get('/login.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-app.get('*', (req, res) => {
+app.get('/', (req, res) => {
   if (!req.session || !req.session.authenticated) return res.redirect('/login.html');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 initDatabase().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
