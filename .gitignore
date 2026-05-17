@@ -1,0 +1,7 @@
+node_modules/
+ventas.db
+server.log
+server.err
+server_test.log
+server_test_err.log
+.env
