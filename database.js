@@ -10,7 +10,8 @@ const DATABASE_URL = process.env.DATABASE_URL || '';
 async function initDatabase() {
   if (DATABASE_URL) {
     const { Pool } = require('pg');
-    const pool = new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } });
+    const url = DATABASE_URL.includes('supabase.co') ? DATABASE_URL.replace(':6543', ':5432') : DATABASE_URL;
+    const pool = new Pool({ connectionString: url, ssl: { rejectUnauthorized: false }, family: 4 });
     const client = await pool.connect();
     db = pool;
     isPostgres = true;
