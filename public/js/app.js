@@ -39,11 +39,17 @@ async function api(path, options = {}) {
     headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options
   });
+  if (res.status === 401) { window.location.href = '/login.html'; return; }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || 'Error del servidor');
   }
   return res.json();
+}
+
+async function cerrarSesion() {
+  await api('/auth/logout', { method: 'POST' });
+  window.location.href = '/login.html';
 }
 
 // ==================== INICIO ====================
