@@ -48,6 +48,9 @@ async function initDatabase() {
         FOREIGN KEY (producto_id) REFERENCES productos(id)
       )
     `);
+    await client.query(`CREATE TABLE IF NOT EXISTS config (clave TEXT PRIMARY KEY, valor TEXT)`);
+    await client.query(`CREATE TABLE IF NOT EXISTS notificaciones (id SERIAL PRIMARY KEY, venta_id INTEGER, comprador TEXT, telefono TEXT, mensaje TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, enviada BOOLEAN DEFAULT FALSE)`);
+    await client.query(`INSERT INTO config (clave, valor) SELECT 'tasa_bcv', '0' WHERE NOT EXISTS (SELECT 1 FROM config WHERE clave = 'tasa_bcv')`);
     client.release();
     return db;
   }
@@ -86,6 +89,9 @@ async function initDatabase() {
     FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE,
     FOREIGN KEY (producto_id) REFERENCES productos(id)
   )`);
+  db.run(`CREATE TABLE IF NOT EXISTS config (clave TEXT PRIMARY KEY, valor TEXT)`);
+  db.run(`CREATE TABLE IF NOT EXISTS notificaciones (id INTEGER PRIMARY KEY AUTOINCREMENT, venta_id INTEGER, comprador TEXT, telefono TEXT, mensaje TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, enviada INTEGER DEFAULT 0)`);
+  db.run("INSERT OR IGNORE INTO config (clave, valor) VALUES ('tasa_bcv', '0')");
   save();
   return db;
 }

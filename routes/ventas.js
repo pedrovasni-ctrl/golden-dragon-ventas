@@ -5,13 +5,19 @@ const db = require('../database');
 const isPG = db.getDbType() === 'postgres';
 
 router.get('/', (req, res) => {
-  const { desde, hasta, estado } = req.query;
+  const { desde, hasta, estado, buscar } = req.query;
   let sql = `SELECT v.*, c.nombre AS comprador_nombre
              FROM ventas v JOIN compradores c ON v.comprador_id = c.id WHERE 1=1`;
   const params = [];
   if (desde) { sql += ' AND v.created_at >= ?'; params.push(desde); }
   if (hasta) { sql += ' AND v.created_at <= ?'; params.push(hasta); }
   if (estado) { sql += ' AND v.estado = ?'; params.push(estado); }
+  if (buscar) {
+    const b = `%${buscar}%`;
+    const idExpr = isPG ? 'v.id::text' : 'CAST(v.id AS TEXT)';
+    sql += ` AND (${idExpr} LIKE ? OR c.nombre LIKE ?)`;
+    params.push(b, b);
+  }
   sql += ' ORDER BY v.id DESC';
   res.json(db.query(sql, params));
 });

@@ -40,7 +40,7 @@
             <ul class="dropdown-menu dropdown-menu-dark">
               <li><a class="dropdown-item" href="#" data-page="disponibilidad"><i class="bi bi-check-circle"></i> Disponibilidad</a></li>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="#" data-page="productos"><i class="bi bi-list-ul"></i> Listado de Productos</a></li>
+              <li><a class="dropdown-item admin-only" href="#" data-page="productos"><i class="bi bi-list-ul"></i> Listado de Productos</a></li>
             </ul>
           </li>
           <li class="nav-item dropdown">
@@ -48,15 +48,16 @@
               <i class="bi bi-archive"></i> Inventarios
             </a>
             <ul class="dropdown-menu dropdown-menu-dark">
-              <li><a class="dropdown-item" href="#" data-page="cargar-inventario"><i class="bi bi-upload"></i> Cargar Inventario</a></li>
+              <li><a class="dropdown-item admin-only" href="#" data-page="cargar-inventario"><i class="bi bi-upload"></i> Cargar Inventario</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="#" data-page="consultar-inventario"><i class="bi bi-eye"></i> Consultar Inventario</a></li>
             </ul>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" data-page="compradores"><i class="bi bi-people"></i> Compradores</a>
+            <a class="nav-link admin-only" href="#" data-page="compradores"><i class="bi bi-people"></i> Compradores</a>
           </li>
-          <li class="nav-item ms-xl-3">
+          <li class="nav-item ms-xl-3 d-flex align-items-center gap-2">
+            <span class="badge bg-gold text-dark" id="rolBadge" style="display:none;">ADMIN</span>
             <a class="nav-link text-danger" href="#" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i> Salir</a>
           </li>
         </ul>
@@ -182,6 +183,28 @@
         <div class="modal-body" id="resultadoCargaBody"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-gold" data-bs-dismiss="modal">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalTasa" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-currency-dollar"></i> Tasa BCV</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-white-50 mb-2">Tasa de cambio oficial en Venezuela (Bs/USD)</p>
+          <div class="input-group">
+            <span class="input-group-text bg-dark text-gold border-gold">Bs.</span>
+            <input type="number" class="form-control" id="tasaValor" step="0.01" min="0">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-gold" id="btnGuardarTasa">Guardar Tasa</button>
         </div>
       </div>
     </div>
