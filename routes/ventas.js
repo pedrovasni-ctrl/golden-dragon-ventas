@@ -16,25 +16,25 @@ router.get('/', (req, res) => {
   res.json(db.query(sql, params));
 });
 
-router.get('/resumen', (req, res) => {
-  const dateExpr = isPG ? "created_at::date = CURRENT_DATE" : "date(created_at) = date('now')";
-  const dateGroup = isPG ? "created_at::date" : "date(created_at)";
-  const ventas_hoy = db.get(`SELECT COUNT(*) as total, COALESCE(SUM(total),0) as monto FROM ventas WHERE ${dateExpr} AND estado != 'cancelada'`) || { total: 0, monto: 0 };
-  const ventas_totales = db.get("SELECT COUNT(*) as total, COALESCE(SUM(total),0) as monto FROM ventas WHERE estado != 'cancelada'") || { total: 0, monto: 0 };
-  const productos_bajo_stock = db.get('SELECT COUNT(*) as total FROM productos WHERE stock <= 5') || { total: 0 };
-  const productos_mas_vendidos = db.query(
-    `SELECT p.id, p.nombre, COALESCE(SUM(vi.cantidad),0) as cantidad, COALESCE(SUM(vi.subtotal),0) as total
-     FROM ventas_items vi JOIN productos p ON vi.producto_id = p.id
-     JOIN ventas v ON vi.venta_id = v.id WHERE v.estado != 'cancelada'
-     GROUP BY p.id, p.nombre ORDER BY cantidad DESC LIMIT 5`
-  );
-  const ventas_por_dia = db.query(
-    `SELECT ${dateGroup} as fecha, COUNT(*) as cantidad, COALESCE(SUM(total),0) as monto
-     FROM ventas WHERE estado != 'cancelada'
-     GROUP BY ${dateGroup} ORDER BY fecha DESC LIMIT 7`
-  );
-  db.get('SELECT COUNT(*) as total FROM productos WHERE stock <= 5').then ? ventas_hoy.then : null;
-  res.json({ ventas_hoy, ventas_totales, productos_bajo_stock, productos_mas_vendidos, ventas_por_dia });
+router.get('/resumen', async (req, res) => {
+  try {
+    const dateExpr = isPG ? "created_at::date = CURRENT_DATE" : "date(created_at) = date('now')";
+    const dateGroup = isPG ? "created_at::date" : "date(created_at)";
+    const [ventas_hoy, ventas_totales, productos_bajo_stock, productos_mas_vendidos, ventas_por_dia] = await Promise.all([
+      db.get(`SELECT COUNT(*) as total, COALESCE(SUM(total),0) as monto FROM ventas WHERE ${dateExpr} AND estado != 'cancelada'`),
+      db.get(`SELECT COUNT(*) as total, COALESCE(SUM(total),0) as monto FROM ventas WHERE estado != 'cancelada'`),
+      db.get('SELECT COUNT(*) as total FROM productos WHERE stock <= 5'),
+      db.query(`SELECT p.id, p.nombre, COALESCE(SUM(vi.cantidad),0) as cantidad, COALESCE(SUM(vi.subtotal),0) as total FROM ventas_items vi JOIN productos p ON vi.producto_id = p.id JOIN ventas v ON vi.venta_id = v.id WHERE v.estado != 'cancelada' GROUP BY p.id, p.nombre ORDER BY cantidad DESC LIMIT 5`),
+      db.query(`SELECT ${dateGroup} as fecha, COUNT(*) as cantidad, COALESCE(SUM(total),0) as monto FROM ventas WHERE estado != 'cancelada' GROUP BY ${dateGroup} ORDER BY fecha DESC LIMIT 7`)
+    ]);
+    res.json({
+      ventas_hoy: ventas_hoy || { total: 0, monto: 0 },
+      ventas_totales: ventas_totales || { total: 0, monto: 0 },
+      productos_bajo_stock: productos_bajo_stock || { total: 0 },
+      productos_mas_vendidos: productos_mas_vendidos || [],
+      ventas_por_dia: ventas_por_dia || []
+    });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 router.get('/:id', (req, res) => {
