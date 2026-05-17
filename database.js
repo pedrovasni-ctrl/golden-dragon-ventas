@@ -13,8 +13,10 @@ async function initDatabase() {
     let url = DATABASE_URL;
     if (url.includes('supabase.co') && url.includes(':6543')) {
       const region = 'us-east-2';
+      const projectRef = 'kczovozazqwdyrbqrezt';
       url = url.replace(/db\.[^.]+\.supabase\.co/, `aws-0-${region}.pooler.supabase.com`);
       url = url.replace(':6543', ':5432');
+      url = url.replace(/\/\/postgres:/, `//${projectRef}.postgres:`);
       url += '?pgbouncer=true';
     }
     const pool = new Pool({ connectionString: url, ssl: { rejectUnauthorized: false } });
