@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 
-router.post('/cargar', (req, res) => {
+router.post('/cargar', async (req, res) => {
   const { items, mode } = req.body;
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Se requiere un array de items' });
@@ -14,12 +14,12 @@ router.post('/cargar', (req, res) => {
         results.errores.push({ item, error: 'Nombre requerido' });
         continue;
       }
-      const existing = db.get('SELECT * FROM productos WHERE nombre = ?', [item.nombre.trim()]);
+      const existing = await db.get('SELECT * FROM productos WHERE nombre = ?', [item.nombre.trim()]);
       if (existing) {
         const nuevoStock = mode === 'replace'
           ? parseInt(item.stock || 0)
           : existing.stock + parseInt(item.stock || 0);
-        db.run(
+        await db.run(
           'UPDATE productos SET stock = ?, precio = ?, descripcion = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
           [
             nuevoStock,
@@ -30,7 +30,7 @@ router.post('/cargar', (req, res) => {
         );
         results.actualizados++;
       } else {
-        db.run(
+        await db.run(
           'INSERT INTO productos (nombre, descripcion, precio, stock) VALUES (?, ?, ?, ?)',
           [
             item.nombre.trim(),
@@ -48,7 +48,7 @@ router.post('/cargar', (req, res) => {
   res.json(results);
 });
 
-router.get('/stock', (req, res) => {
+router.get('/stock', async (req, res) => {
   const { minimo, buscar } = req.query;
   let sql = 'SELECT * FROM productos WHERE 1=1';
   const params = [];
@@ -61,7 +61,9 @@ router.get('/stock', (req, res) => {
     params.push(`%${buscar}%`);
   }
   sql += ' ORDER BY stock ASC, nombre ASC';
-  res.json(db.query(sql, params));
+  try {
+    res.json(await db.query(sql, params));
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 module.exports = router;

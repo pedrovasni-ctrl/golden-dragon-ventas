@@ -14,6 +14,7 @@ const PORT = process.env.PORT || 3000;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'golden-dragon-secret-key-2026';
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'golden2026';
+const DATABASE_URL = process.env.DATABASE_URL || '';
 
 app.use(cors());
 app.use(express.json());
